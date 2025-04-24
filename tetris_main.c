@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdbool.h>
 #include "tetris_game.h"
 #include "tetris_display.h"
 
@@ -21,16 +19,16 @@ void delay_ms(int ms) {
 }
 
 int main() {
-    // Initialize the display
+    // Initialise the display
     displayInit();
     
-    // Initialize the game
+    // Initialise the game
     initGame();
     
     // Game loop
-    float tick = 0.025f; // 40 FPS = 25ms per frame
-    
+
     while (1) {
+        const float tick = 0.025f;
         // Process input
         handleInput();
         
@@ -40,7 +38,7 @@ int main() {
         // Draw the game
         draw(tick, &game);
         
-        // Wait for next frame (25ms for ~40fps)
+        // Wait for the next frame (25ms for ~40fps)
         delay_ms(25);
     }
     

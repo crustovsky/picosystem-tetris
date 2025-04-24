@@ -5,7 +5,7 @@
 #include "tetris_display.h"
 #include "tetris_game.h"
 
-// Tetromino colors in RGB565 format
+// Tetromino colours in RGB565 format
 const uint16_t TETROMINO_COLORS[SHAPE_COUNT + 1] = {
     COLOR_BLACK,  // Empty
     COLOR_CYAN,   // I-shape
@@ -32,7 +32,7 @@ static Font smallFont = { NULL, 5, 7 };
 static Font largeFont = { NULL, 8, 12 };
 
 /**
- * Initialize the display hardware
+ * Initialise the display hardware
  */
 void displayInit() {
     // TODO: Initialize your display hardware
@@ -46,10 +46,10 @@ void displayInit() {
 }
 
 /**
- * Clear the entire display with a specific color
+ * Clear the entire display with a specific colour
  */
 void displayClear(uint16_t color) {
-    // Fill the frame buffer with the specified color
+    // Fill the frame buffer with the specified colour
     for (int i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT; i++) {
         frameBuffer[i] = color;
     }
@@ -58,7 +58,7 @@ void displayClear(uint16_t color) {
 }
 
 /**
- * Draw a single pixel at the specified coordinates with the given color
+ * Draw a single pixel at the specified coordinates with the given colour
  */
 void displayDrawPixel(int x, int y, uint16_t color) {
     // Check if the coordinates are within the display boundaries
@@ -98,7 +98,7 @@ void displayDrawLine(int x0, int y0, int x1, int y1, uint16_t color) {
 }
 
 /**
- * Draw a rectangle outline with the specified dimensions and color
+ * Draw a rectangle outline with the specified dimensions and colour
  */
 void displayDrawRect(int x, int y, int width, int height, uint16_t color) {
     // Draw the four sides of the rectangle
@@ -144,8 +144,8 @@ void displayFillRect(int x, int y, int width, int height, uint16_t color) {
 }
 
 /**
- * Draw text at the specified coordinates with the given color and size
- * Size: 1 = small font, 2 = large font
+ * Draw text at the specified coordinates with the given colour and size
+ * 1 = small font, 2 = large font
  */
 void displayDrawText(int x, int y, const char* text, uint16_t color, uint8_t size) {
     // TODO: Implement text rendering based on your font system
@@ -164,7 +164,7 @@ void displayDrawText(int x, int y, const char* text, uint16_t color, uint8_t siz
         displayFillRect(cursor_x, cursor_y, font->width, font->height, COLOR_BLACK);
         displayDrawRect(cursor_x, cursor_y, font->width, font->height, color);
         
-        // Move cursor to the next character position
+        // Move the cursor to the next character position
         cursor_x += font->width + 1;
         
         // Move to the next character
@@ -204,27 +204,27 @@ void drawTitle() {
 /**
  * Draw the game board
  */
-void drawBoard(Game* game) {
+void drawBoard(const Game* game) {
     // Draw board background
-    displayFillRect(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, COLOR_BLACK);
+    displayFillRect(BOARD_X, BOARD_Y, BOARD_PIXEL_WIDTH, BOARD_PIXEL_HEIGHT, COLOR_BLACK);
     
     // Draw grid lines
-    for (int x = 1; x < BOARD_WIDTH / CELL_WIDTH; x++) {
+    for (int x = 1; x < BOARD_PIXEL_WIDTH / CELL_WIDTH; x++) {
         displayDrawLine(BOARD_X + x * CELL_WIDTH, BOARD_Y, 
-                       BOARD_X + x * CELL_WIDTH, BOARD_Y + BOARD_HEIGHT, COLOR_DARK_GRAY);
+                       BOARD_X + x * CELL_WIDTH, BOARD_Y + BOARD_PIXEL_HEIGHT, COLOR_DARK_GRAY);
     }
     
-    for (int y = 1; y < BOARD_HEIGHT / CELL_HEIGHT; y++) {
+    for (int y = 1; y < BOARD_PIXEL_HEIGHT / CELL_HEIGHT; y++) {
         displayDrawLine(BOARD_X, BOARD_Y + y * CELL_HEIGHT,
-                       BOARD_X + BOARD_WIDTH, BOARD_Y + y * CELL_HEIGHT, COLOR_DARK_GRAY);
+                       BOARD_X + BOARD_PIXEL_WIDTH, BOARD_Y + y * CELL_HEIGHT, COLOR_DARK_GRAY);
     }
     
     // Create a temporary board with the current piece
-    int tempBoard[BOARD_HEIGHT / CELL_HEIGHT][BOARD_WIDTH / CELL_WIDTH] = {0};
+    int tempBoard[BOARD_PIXEL_HEIGHT / CELL_HEIGHT][BOARD_PIXEL_WIDTH / CELL_WIDTH] = {0};
     
     // Copy the main board
-    for (int y = 0; y < BOARD_HEIGHT / CELL_HEIGHT; y++) {
-        for (int x = 0; x < BOARD_WIDTH / CELL_WIDTH; x++) {
+    for (int y = 0; y < BOARD_PIXEL_HEIGHT / CELL_HEIGHT; y++) {
+        for (int x = 0; x < BOARD_PIXEL_WIDTH / CELL_WIDTH; x++) {
             tempBoard[y][x] = game->board[y][x];
         }
     }
@@ -236,8 +236,8 @@ void drawBoard(Game* game) {
                 int boardX = game->currentPiece.x + x;
                 int boardY = game->currentPiece.y + y;
                 
-                if (boardX >= 0 && boardX < BOARD_WIDTH / CELL_WIDTH && 
-                    boardY >= 0 && boardY < BOARD_HEIGHT / CELL_HEIGHT) {
+                if (boardX >= 0 && boardX < BOARD_PIXEL_WIDTH / CELL_WIDTH && 
+                    boardY >= 0 && boardY < BOARD_PIXEL_HEIGHT / CELL_HEIGHT) {
                     tempBoard[boardY][boardX] = game->currentPiece.shape + 1;
                 }
             }
@@ -245,8 +245,8 @@ void drawBoard(Game* game) {
     }
     
     // Draw filled cells
-    for (int y = 0; y < BOARD_HEIGHT / CELL_HEIGHT; y++) {
-        for (int x = 0; x < BOARD_WIDTH / CELL_WIDTH; x++) {
+    for (int y = 0; y < BOARD_PIXEL_HEIGHT / CELL_HEIGHT; y++) {
+        for (int x = 0; x < BOARD_PIXEL_WIDTH / CELL_WIDTH; x++) {
             if (tempBoard[y][x] > 0) {
                 uint16_t color = TETROMINO_COLORS[tempBoard[y][x]];
                 
@@ -272,21 +272,21 @@ void drawBoard(Game* game) {
     }
     
     // Draw board border
-    displayDrawRect(BOARD_X, BOARD_Y, BOARD_WIDTH, BOARD_HEIGHT, COLOR_WHITE);
+    displayDrawRect(BOARD_X, BOARD_Y, BOARD_PIXEL_WIDTH, BOARD_PIXEL_HEIGHT, COLOR_WHITE);
 }
 
 /**
  * Draw the next piece preview
  */
-void drawNextPiece(Game* game) {
-    // Draw next piece background and border
+void drawNextPiece(const Game* game) {
+    // Draw the next piece background and border
     displayFillRect(NEXT_X, NEXT_Y, NEXT_WIDTH, NEXT_HEIGHT, COLOR_BLACK);
     displayDrawRect(NEXT_X, NEXT_Y, NEXT_WIDTH, NEXT_HEIGHT, COLOR_WHITE);
     
-    // Draw "NEXT" label
+    // Draw the "NEXT" label
     displayDrawText(NEXT_X + NEXT_WIDTH / 2, NEXT_Y + NEXT_HEIGHT + 10, "NEXT", COLOR_BLACK, 1);
     
-    // Calculate position to center the piece
+    // Calculate position to centre the piece
     int offsetX = (NEXT_WIDTH - (TETROMINO_SIZE * NEXT_CELL_SIZE)) / 2;
     int offsetY = (NEXT_HEIGHT - (TETROMINO_SIZE * NEXT_CELL_SIZE)) / 2;
     
@@ -321,12 +321,12 @@ void drawNextPiece(Game* game) {
 /**
  * Draw score, level, and lines cleared
  */
-void drawStats(Game* game) {
+void drawStats(const Game* game) {
     char buffer[16];
     
     // Draw info panel background
-    displayFillRect(INFO_X, BOARD_Y, INFO_WIDTH, BOARD_HEIGHT, COLOR_LIGHT_GRAY);
-    displayDrawRect(INFO_X, BOARD_Y, INFO_WIDTH, BOARD_HEIGHT, COLOR_DARK_GRAY);
+    displayFillRect(INFO_X, BOARD_Y, INFO_WIDTH, BOARD_PIXEL_HEIGHT, COLOR_LIGHT_GRAY);
+    displayDrawRect(INFO_X, BOARD_Y, INFO_WIDTH, BOARD_PIXEL_HEIGHT, COLOR_DARK_GRAY);
     
     // Draw score
     displayDrawText(INFO_X + INFO_WIDTH / 2, SCORE_LABEL_Y, "SCORE", COLOR_BLACK, 1);
@@ -350,38 +350,38 @@ void drawStats(Game* game) {
 /**
  * Draw game state messages (GAME OVER, PAUSED)
  */
-void drawGameState(Game* game) {
+void drawGameState(const Game* game) {
     if (game->state == GAME_OVER) {
         // Draw semi-transparent overlay
-        for (int y = 0; y < BOARD_HEIGHT; y += 2) {
-            for (int x = 0; x < BOARD_WIDTH; x += 2) {
+        for (int y = 0; y < BOARD_PIXEL_HEIGHT; y += 2) {
+            for (int x = 0; x < BOARD_PIXEL_WIDTH; x += 2) {
                 displayFillRect(BOARD_X + x, BOARD_Y + y, 2, 2, COLOR_BLACK);
             }
         }
         
-        // Draw game over message
-        displayFillRect(BOARD_X + 20, BOARD_Y + 80, BOARD_WIDTH - 40, 40, COLOR_RED);
-        displayDrawRect(BOARD_X + 20, BOARD_Y + 80, BOARD_WIDTH - 40, 40, COLOR_WHITE);
-        displayDrawText(BOARD_X + BOARD_WIDTH / 2, BOARD_Y + 100, "GAME OVER", COLOR_WHITE, 2);
+        // Draw game over a message
+        displayFillRect(BOARD_X + 20, BOARD_Y + 80, BOARD_PIXEL_WIDTH - 40, 40, COLOR_RED);
+        displayDrawRect(BOARD_X + 20, BOARD_Y + 80, BOARD_PIXEL_WIDTH - 40, 40, COLOR_WHITE);
+        displayDrawText(BOARD_X + BOARD_PIXEL_WIDTH / 2, BOARD_Y + 100, "GAME OVER", COLOR_WHITE, 2);
     } else if (game->state == GAME_PAUSED) {
         // Draw semi-transparent overlay
-        for (int y = 0; y < BOARD_HEIGHT; y += 2) {
-            for (int x = 0; x < BOARD_WIDTH; x += 2) {
+        for (int y = 0; y < BOARD_PIXEL_HEIGHT; y += 2) {
+            for (int x = 0; x < BOARD_PIXEL_WIDTH; x += 2) {
                 displayFillRect(BOARD_X + x, BOARD_Y + y, 2, 2, COLOR_BLACK);
             }
         }
         
-        // Draw pause message
-        displayFillRect(BOARD_X + 20, BOARD_Y + 80, BOARD_WIDTH - 40, 40, COLOR_BLUE);
-        displayDrawRect(BOARD_X + 20, BOARD_Y + 80, BOARD_WIDTH - 40, 40, COLOR_WHITE);
-        displayDrawText(BOARD_X + BOARD_WIDTH / 2, BOARD_Y + 100, "PAUSED", COLOR_WHITE, 2);
+        // Draw a pause message
+        displayFillRect(BOARD_X + 20, BOARD_Y + 80, BOARD_PIXEL_WIDTH - 40, 40, COLOR_BLUE);
+        displayDrawRect(BOARD_X + 20, BOARD_Y + 80, BOARD_PIXEL_WIDTH - 40, 40, COLOR_WHITE);
+        displayDrawText(BOARD_X + BOARD_PIXEL_WIDTH / 2, BOARD_Y + 100, "PAUSED", COLOR_WHITE, 2);
     }
 }
 
 /**
  * Main draw function
  */
-void draw(float tick, Game* game) {
+void draw(float tick, const Game* game) {
     clearScreen();
     drawTitle();
     drawBoard(game);

@@ -59,7 +59,7 @@ const bool TETROMINOS[SHAPE_COUNT][TETROMINO_SIZE][TETROMINO_SIZE] = {
     }
 };
 
-// Initialize the game
+// Initialise the game
 void initGame() {
     // Seed random number generator
     srand((unsigned int)time(NULL));
@@ -71,7 +71,7 @@ void initGame() {
         }
     }
     
-    // Initialize game state
+    // Initialise game state
     game.state = GAME_ACTIVE;
     game.score = 0;
     game.level = 1;
@@ -208,24 +208,24 @@ void placeTetromino() {
     // Clear any full lines
     clearLines();
     
-    // Set next piece as current and create new next piece
+    // Set the next piece as current and create new next piece
     game.currentPiece = game.nextPiece;
     createNewTetromino(&game.nextPiece);
     
-    // Check if new piece can be placed
+    // Check if a new piece can be placed
     if (checkCollision(game.currentPiece)) {
         game.state = GAME_OVER;
     }
 }
 
-// Clear any full lines and update score
+// Clear any full lines and update the score
 void clearLines() {
     int linesCleared = 0;
     
     for (int y = 0; y < BOARD_HEIGHT; y++) {
         bool lineFull = true;
         
-        // Check if line is full
+        // Check if the line is full
         for (int x = 0; x < BOARD_WIDTH; x++) {
             if (game.board[y][x] == 0) {
                 lineFull = false;
@@ -233,7 +233,7 @@ void clearLines() {
             }
         }
         
-        // If line is full, clear it and move all lines above down
+        // If a line is full, clear it and move all lines above down
         if (lineFull) {
             linesCleared++;
             
@@ -244,17 +244,17 @@ void clearLines() {
                 }
             }
             
-            // Clear top line
+            // Clear the top line
             for (int x = 0; x < BOARD_WIDTH; x++) {
                 game.board[0][x] = 0;
             }
             
-            // Stay on same line to check if the moved line is also full
+            // Stay on the same line to check if the moved line is also full
             y--;
         }
     }
     
-    // Update score based on number of lines cleared
+    // Update score based on the number of lines cleared
     if (linesCleared > 0) {
         // Classic Tetris scoring: more points for clearing multiple lines at once
         static const int lineScores[] = {0, 40, 100, 300, 1200};
@@ -277,10 +277,10 @@ void update(float tick) {
     }
     
     // Adjust speed based on level
-    float levelSpeed = moveDownInterval - (game.level * 0.05f);
+    float levelSpeed = moveDownInterval - ((float)game.level * 0.05f);
     if (levelSpeed < 0.1f) levelSpeed = 0.1f; // Cap the speed
     
-    // Move piece down automatically
+    // Move a piece down automatically
     accumulator += tick;
     if (accumulator >= levelSpeed) {
         moveTetromino(DIR_DOWN);

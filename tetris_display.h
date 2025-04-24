@@ -12,8 +12,8 @@
 // Game board dimensions and position
 #define BOARD_X 10
 #define BOARD_Y 25
-#define BOARD_WIDTH 150
-#define BOARD_HEIGHT 200
+#define BOARD_PIXEL_WIDTH 150
+#define BOARD_PIXEL_HEIGHT 200
 #define CELL_WIDTH 15
 #define CELL_HEIGHT 10
 
@@ -69,10 +69,10 @@ void displayUpdate();
 // Tetris drawing functions
 void clearScreen();
 void drawTitle();
-void drawBoard(Game* game);
-void drawNextPiece(Game* game);
-void drawStats(Game* game);
-void drawGameState(Game* game);
-void draw(float tick, Game* game);
+void drawBoard(const Game* game);
+void drawNextPiece(const Game* game);
+void drawStats(const Game* game);
+void drawGameState(const Game* game);
+void draw(float tick, const Game* game);
 
 #endif /* TETRIS_DISPLAY_H */
