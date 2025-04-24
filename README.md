@@ -4,6 +4,8 @@
 
 This document provides a summary of the Tetris implementation designed for a 240x240 pixel display with 16bpp color depth. The code follows a modular approach with clean separation between game logic and display handling.
 
+<img src="./tetris_layout.svg">
+
 ## File Structure
 
 The implementation consists of five files:
