@@ -381,7 +381,7 @@ void drawGameState(const Game* game) {
 /**
  * Main draw function
  */
-void draw(float tick, const Game* game) {
+void drawGame(float tick, const Game* game) {
     clearScreen();
     drawTitle();
     drawBoard(game);

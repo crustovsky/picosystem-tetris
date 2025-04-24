@@ -3,11 +3,9 @@ cmake_minimum_required(VERSION 3.12)
 set(PROJECT_NAME VibeCodedTetris)
 
 set(PROJECT_SOURCES
-#        tetris
-        main.cpp
-#        tetris_main.c
-#        tetris_game.c
-#        tetris_display.c
+        tetris_main.cpp
+        tetris_game.c
+        tetris_display.c
 )
 
 if(NOT PICO_SDK_PATH)
@@ -30,8 +28,8 @@ picosystem_executable(
         ${PROJECT_SOURCES}
 )
 
-pixel_double(${PROJECT_NAME})          # 120x120 resolution game, pixel-doubled to 240x240
-disable_startup_logo(${PROJECT_NAME})  # Skip the PicoSystem splash
+#pixel_double(${PROJECT_NAME})          # 120x120 resolution game, pixel-doubled to 240x240
+#disable_startup_logo(${PROJECT_NAME})  # Skip the PicoSystem splash
 #no_font(${PROJECT_NAME})              # Omit the default font
 #no_spritesheet(${PROJECT_NAME})       # Omit the default spritesheet
 #no_overclock(${PROJECT_NAME})         # Don't overclock

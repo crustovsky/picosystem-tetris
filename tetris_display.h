@@ -1,6 +1,10 @@
 #ifndef TETRIS_DISPLAY_H
 #define TETRIS_DISPLAY_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 #include "tetris_game.h" // For Game structure definition
@@ -73,6 +77,10 @@ void drawBoard(const Game* game);
 void drawNextPiece(const Game* game);
 void drawStats(const Game* game);
 void drawGameState(const Game* game);
-void draw(float tick, const Game* game);
+void drawGame(float tick, const Game* game);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* TETRIS_DISPLAY_H */

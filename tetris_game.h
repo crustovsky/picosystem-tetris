@@ -1,6 +1,10 @@
 #ifndef TETRIS_GAME_H
 #define TETRIS_GAME_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 
 // Game constants
@@ -58,7 +62,7 @@ extern Game game;
 
 // Game functions
 void initGame();
-void update(float tick);
+void updateGame(float tick);
 bool moveTetromino(Direction dir);
 bool rotateTetromino();
 void createNewTetromino(Tetromino* tetromino);
@@ -66,5 +70,10 @@ bool checkCollision(Tetromino tetromino);
 void placeTetromino();
 void clearLines();
 void rotateTetrominoMatrix(Tetromino* tetromino);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif /* TETRIS_GAME_H */

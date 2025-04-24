@@ -268,7 +268,7 @@ void clearLines() {
 }
 
 // Update game state
-void update(float tick) {
+void updateGame(float tick) {
     static float accumulator = 0;
     static float moveDownInterval = 1.0f; // seconds
     

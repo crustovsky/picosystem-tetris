@@ -1,6 +1,10 @@
 #include "tetris_game.h"
 #include "tetris_display.h"
 
+#include "picosystem.hpp"
+
+using namespace picosystem;
+
 // Handle input based on your device's input system
 void handleInput() {
     // TODO: Implement input handling for your device
@@ -18,29 +22,30 @@ void delay_ms(int ms) {
     // This could be a simple busy wait, sleep function, or timer-based delay
 }
 
-int main() {
+void init() {
     // Initialise the display
     displayInit();
-    
+
     // Initialise the game
     initGame();
-    
-    // Game loop
+}
 
-    while (1) {
-        const float tick = 0.025f;
-        // Process input
-        handleInput();
-        
-        // Update game state
-        update(tick);
-        
-        // Draw the game
-        draw(tick, &game);
-        
-        // Wait for the next frame (25ms for ~40fps)
-        delay_ms(25);
-    }
-    
-    return 0;
+void update(uint32_t tick) {
+    handleInput();
+
+    // Update game state
+    updateGame(tick);
+}
+
+void draw(uint32_t tick) {
+    // clear the background
+    alpha();
+    pen(1, 1, 1);
+    clear();
+
+    drawGame(tick, &game);
+
+    pen(10, 10, 10);
+    text("TETRIS", 8, 10);
+
 }
