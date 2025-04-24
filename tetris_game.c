@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "tetris.h"
+#include "tetris_game.h"
 
 // Global game instance
 Game game;

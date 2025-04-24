@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "tetris.h" // For Game structure definition
+#include "tetris_game.h" // For Game structure definition
 
 // Display dimensions
 #define DISPLAY_WIDTH 240

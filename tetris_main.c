@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "tetris.h"
+#include "tetris_game.h"
 #include "tetris_display.h"
 
 // Handle input based on your device's input system

@@ -1,8 +1,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "tetris_display.h"
-#include "tetris.h"
+#include "tetris_game.h"
 
 // Tetromino colors in RGB565 format
 const uint16_t TETROMINO_COLORS[SHAPE_COUNT + 1] = {
