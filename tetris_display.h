@@ -60,7 +60,33 @@ extern "C" {
 #define COLOR_ORANGE 0xFD20     // 255, 128, 0
 #define COLOR_PURPLE 0x8010     // 128, 0, 128
 
-// Display functions for your device - implement these in tetris_display.c
+// Display renderer interface - to be implemented by platform-specific renderers
+typedef struct {
+    // Initialize display
+    void (*init)();
+    // Clear the display with a specific color
+    void (*clear)(uint16_t color);
+    // Draw a single pixel
+    void (*drawPixel)(int x, int y, uint16_t color);
+    // Draw a line from (x0,y0) to (x1,y1)
+    void (*drawLine)(int x0, int y0, int x1, int y1, uint16_t color);
+    // Draw a rectangle outline
+    void (*drawRect)(int x, int y, int width, int height, uint16_t color);
+    // Draw a filled rectangle
+    void (*fillRect)(int x, int y, int width, int height, uint16_t color);
+    // Draw text
+    void (*drawText)(int x, int y, const char* text, uint16_t color, uint8_t size);
+    // Update display (flush buffer to screen)
+    void (*update)();
+} DisplayRenderer;
+
+// Current display renderer
+extern DisplayRenderer* currentRenderer;
+
+// Function to set the current renderer
+void setDisplayRenderer(DisplayRenderer* renderer);
+
+// Generic display functions that route to the current renderer
 void displayInit();
 void displayClear(uint16_t color);
 void displayDrawPixel(int x, int y, uint16_t color);
@@ -70,7 +96,7 @@ void displayFillRect(int x, int y, int width, int height, uint16_t color);
 void displayDrawText(int x, int y, const char* text, uint16_t color, uint8_t size);
 void displayUpdate();
 
-// Tetris drawing functions
+// Tetris drawing functions (platform-independent)
 void clearScreen();
 void drawTitle();
 void drawBoard(const Game* game);

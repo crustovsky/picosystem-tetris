@@ -17,173 +17,61 @@ const uint16_t TETROMINO_COLORS[SHAPE_COUNT + 1] = {
     COLOR_ORANGE  // L-shape
 };
 
-// Frame buffer for the display
-static uint16_t frameBuffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
+// Current display renderer
+DisplayRenderer* currentRenderer = NULL;
 
-// Font data structure (simplified)
-typedef struct {
-    const uint8_t* data;
-    uint8_t width;
-    uint8_t height;
-} Font;
+// Set the current renderer
+void setDisplayRenderer(DisplayRenderer* renderer) {
+    currentRenderer = renderer;
+}
 
-// Simplified small and large font declarations
-static Font smallFont = { NULL, 5, 7 };
-static Font largeFont = { NULL, 8, 12 };
-
-/**
- * Initialise the display hardware
- */
+// Generic display functions that route to the current renderer
 void displayInit() {
-    // TODO: Initialize your display hardware
-    // - Configure SPI/I2C/parallel interface
-    // - Set up display controller registers
-    // - Configure resolution, color mode, etc.
-    // - Turn on the display
-    
-    // Clear the frame buffer
-    displayClear(COLOR_BLACK);
+    if (currentRenderer && currentRenderer->init) {
+        currentRenderer->init();
+    }
 }
 
-/**
- * Clear the entire display with a specific colour
- */
 void displayClear(uint16_t color) {
-    // Fill the frame buffer with the specified colour
-    for (int i = 0; i < DISPLAY_WIDTH * DISPLAY_HEIGHT; i++) {
-        frameBuffer[i] = color;
+    if (currentRenderer && currentRenderer->clear) {
+        currentRenderer->clear(color);
     }
-    
-    // TODO: If your display has a hardware clear function, call it here
 }
 
-/**
- * Draw a single pixel at the specified coordinates with the given colour
- */
 void displayDrawPixel(int x, int y, uint16_t color) {
-    // Check if the coordinates are within the display boundaries
-    if (x >= 0 && x < DISPLAY_WIDTH && y >= 0 && y < DISPLAY_HEIGHT) {
-        // Set the pixel in the frame buffer
-        frameBuffer[y * DISPLAY_WIDTH + x] = color;
+    if (currentRenderer && currentRenderer->drawPixel) {
+        currentRenderer->drawPixel(x, y, color);
     }
 }
 
-/**
- * Draw a line from (x0,y0) to (x1,y1) with the given color
- * Implementation of Bresenham's line algorithm
- */
 void displayDrawLine(int x0, int y0, int x1, int y1, uint16_t color) {
-    int dx = abs(x1 - x0);
-    int dy = abs(y1 - y0);
-    int sx = (x0 < x1) ? 1 : -1;
-    int sy = (y0 < y1) ? 1 : -1;
-    int err = dx - dy;
-    int e2;
-    
-    while (1) {
-        displayDrawPixel(x0, y0, color);
-        
-        if (x0 == x1 && y0 == y1) break;
-        
-        e2 = 2 * err;
-        if (e2 > -dy) {
-            err -= dy;
-            x0 += sx;
-        }
-        if (e2 < dx) {
-            err += dx;
-            y0 += sy;
-        }
+    if (currentRenderer && currentRenderer->drawLine) {
+        currentRenderer->drawLine(x0, y0, x1, y1, color);
     }
 }
 
-/**
- * Draw a rectangle outline with the specified dimensions and colour
- */
 void displayDrawRect(int x, int y, int width, int height, uint16_t color) {
-    // Draw the four sides of the rectangle
-    displayDrawLine(x, y, x + width - 1, y, color);                 // Top
-    displayDrawLine(x, y + height - 1, x + width - 1, y + height - 1, color); // Bottom
-    displayDrawLine(x, y, x, y + height - 1, color);                // Left
-    displayDrawLine(x + width - 1, y, x + width - 1, y + height - 1, color);  // Right
+    if (currentRenderer && currentRenderer->drawRect) {
+        currentRenderer->drawRect(x, y, width, height, color);
+    }
 }
 
-/**
- * Draw a filled rectangle with the specified dimensions and color
- */
 void displayFillRect(int x, int y, int width, int height, uint16_t color) {
-    // Ensure coordinates are within display boundaries
-    if (x < 0) {
-        width += x;
-        x = 0;
+    if (currentRenderer && currentRenderer->fillRect) {
+        currentRenderer->fillRect(x, y, width, height, color);
     }
-    if (y < 0) {
-        height += y;
-        y = 0;
-    }
-    if (x + width > DISPLAY_WIDTH) {
-        width = DISPLAY_WIDTH - x;
-    }
-    if (y + height > DISPLAY_HEIGHT) {
-        height = DISPLAY_HEIGHT - y;
-    }
-    
-    // Draw nothing if the rectangle is outside the display
-    if (width <= 0 || height <= 0) {
-        return;
-    }
-    
-    // Fill the rectangle in the frame buffer
-    for (int j = y; j < y + height; j++) {
-        for (int i = x; i < x + width; i++) {
-            frameBuffer[j * DISPLAY_WIDTH + i] = color;
-        }
-    }
-    
-    // TODO: If your display has a hardware fill function, call it here
 }
 
-/**
- * Draw text at the specified coordinates with the given colour and size
- * 1 = small font, 2 = large font
- */
 void displayDrawText(int x, int y, const char* text, uint16_t color, uint8_t size) {
-    // TODO: Implement text rendering based on your font system
-    
-    // Select the font based on size
-    Font* font = (size > 1) ? &largeFont : &smallFont;
-    
-    // Draw each character in the string
-    int cursor_x = x;
-    int cursor_y = y - font->height / 2; // Center text vertically
-    
-    while (*text) {
-        // TODO: Implement character rendering
-        // This example just draws a placeholder rectangle for each character
-        
-        displayFillRect(cursor_x, cursor_y, font->width, font->height, COLOR_BLACK);
-        displayDrawRect(cursor_x, cursor_y, font->width, font->height, color);
-        
-        // Move the cursor to the next character position
-        cursor_x += font->width + 1;
-        
-        // Move to the next character
-        text++;
+    if (currentRenderer && currentRenderer->drawText) {
+        currentRenderer->drawText(x, y, text, color, size);
     }
 }
 
-/**
- * Update the display with the content in the frame buffer
- */
 void displayUpdate() {
-    // TODO: Send the frame buffer to the display
-    // This depends on your specific display hardware interface
-    
-    // For SPI display example:
-    // 1. Set the display address window to full screen
-    // 2. Start the data transmission
-    // 3. Send all pixels from the frame buffer
-    // 4. End the transmission
+    if (currentRenderer && currentRenderer->update) {
+        currentRenderer->update();
+    }
 }
 
 /**
