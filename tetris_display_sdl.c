@@ -45,14 +45,15 @@ static void sdlInit() {
 }
 
 /**
- * Convert RGB565 color to SDL_Color
+ * Convert RGB565 color to SDL_Color using the shared helper function
  */
 static SDL_Color RGB565toRGB(uint16_t color) {
     SDL_Color rgb;
-    rgb.r = ((color >> 11) & 0x1F) << 3;
-    rgb.g = ((color >> 5) & 0x3F) << 2;
-    rgb.b = (color & 0x1F) << 3;
-    rgb.a = 255;
+    Color c = RGB565toColor(color);
+    rgb.r = c.r;
+    rgb.g = c.g;
+    rgb.b = c.b;
+    rgb.a = c.a;
     return rgb;
 }
 

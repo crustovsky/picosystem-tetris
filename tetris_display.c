@@ -5,6 +5,23 @@
 #include "tetris_display.h"
 #include "tetris_game.h"
 
+// Helper function to convert RGB565 to Color structure
+Color RGB565toColor(uint16_t color) {
+    Color result;
+    result.r = ((color >> 11) & 0x1F) << 3;  // 5 bits to 8 bits
+    result.g = ((color >> 5) & 0x3F) << 2;   // 6 bits to 8 bits
+    result.b = (color & 0x1F) << 3;          // 5 bits to 8 bits
+    result.a = 255;                          // Full opacity
+    return result;
+}
+
+// Helper function to extract RGB values from RGB565 color format
+void extractRGB565(uint16_t color, uint8_t* r, uint8_t* g, uint8_t* b) {
+    if (r) *r = ((color >> 11) & 0x1F) << 3;  // 5 bits to 8 bits
+    if (g) *g = ((color >> 5) & 0x3F) << 2;   // 6 bits to 8 bits
+    if (b) *b = (color & 0x1F) << 3;          // 5 bits to 8 bits
+}
+
 // Tetromino colours in RGB565 format
 const uint16_t TETROMINO_COLORS[SHAPE_COUNT + 1] = {
     COLOR_BLACK,  // Empty

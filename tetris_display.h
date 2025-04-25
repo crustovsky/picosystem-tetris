@@ -60,6 +60,20 @@ extern "C" {
 #define COLOR_ORANGE 0xFD20     // 255, 128, 0
 #define COLOR_PURPLE 0x8010     // 128, 0, 128
 
+// Color structure to use RGBA components directly
+typedef struct {
+    uint8_t r;  // Red component (0-255)
+    uint8_t g;  // Green component (0-255)
+    uint8_t b;  // Blue component (0-255)
+    uint8_t a;  // Alpha component (0-255)
+} Color;
+
+// Helper function to convert RGB565 to Color structure
+Color RGB565toColor(uint16_t color);
+
+// Helper function to extract RGB values from RGB565 color format
+void extractRGB565(uint16_t color, uint8_t* r, uint8_t* g, uint8_t* b);
+
 // Display renderer interface - to be implemented by platform-specific renderers
 typedef struct {
     // Initialize display
