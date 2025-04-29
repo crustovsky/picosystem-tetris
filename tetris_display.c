@@ -209,7 +209,7 @@ void drawNextPiece(const Game* game) {
                     NEXT_CELL_SIZE - 1,
                     color
                 );
-                
+
                 // Add highlight and shadow for 3D effect
                 displayDrawRect(
                     NEXT_X + offsetX + x * NEXT_CELL_SIZE + 1,
@@ -290,8 +290,8 @@ void drawGame(float tick, const Game* game) {
     clearScreen();
     drawTitle();
     drawBoard(game);
-    drawNextPiece(game);
     drawStats(game);
+    drawNextPiece(game);
     drawGameState(game);
     displayUpdate(); // Update the display
 }
