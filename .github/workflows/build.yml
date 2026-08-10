@@ -83,14 +83,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/sdl3-install
-          key: sdl3-${{ runner.os }}-${{ env.SDL_REF }}
+          key: sdl3-${{ runner.os }}-${{ env.SDL_REF }}-x11only
 
+      # This job compiles and links the game, it never opens a window, so SDL3
+      # is built with X11 video only. That avoids pulling in audio and Wayland
+      # dev packages the runner does not ship, and keeps the build fast.
       - name: Build SDL3
         if: steps.cache-sdl.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 --branch "$SDL_REF" https://github.com/libsdl-org/SDL sdl-src
           cmake -S sdl-src -B sdl-build -GNinja \
-            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$HOME/sdl3-install"
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$HOME/sdl3-install" \
+            -DSDL_X11=ON \
+            -DSDL_ALSA=OFF -DSDL_PULSEAUDIO=OFF -DSDL_PIPEWIRE=OFF \
+            -DSDL_JACK=OFF -DSDL_SNDIO=OFF \
+            -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF -DSDL_LIBUDEV=OFF \
+            -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF
           cmake --build sdl-build -j"$(nproc)"
           cmake --install sdl-build
 
