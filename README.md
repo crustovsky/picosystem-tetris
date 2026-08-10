@@ -203,15 +203,16 @@ To add support for a new platform:
 
 ## Continuous integration
 
-`.github/workflows/build.yml` builds both targets on every push to `main` and
-every pull request. The PicoSystem `.uf2` is uploaded as a build artifact, and
-pushing a `v*` tag additionally publishes it to a GitHub release:
+`.github/workflows/build.yml` builds the PicoSystem firmware on every push to
+`main` and every pull request, uploading the `.uf2` as a build artifact. Pushing
+a `v*` tag additionally publishes it to a GitHub release:
 
 ```bash
 git tag v1.0.0 && git push origin v1.0.0
 ```
 
-SDK versions are pinned in the workflow so builds stay reproducible.
+SDK versions are pinned in the workflow so builds stay reproducible. Only the
+firmware is built in CI; the desktop SDL build is for local development.
 
 ## Licence
 

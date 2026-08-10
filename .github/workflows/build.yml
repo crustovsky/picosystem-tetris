@@ -12,7 +12,6 @@ env:
   # builds the pioasm host tool under modern GCC.
   PICO_SDK_REF: '2.3.0'
   PICOSYSTEM_REF: 'd5b83173abc13a8c55d6db94ad68179904a4f6e2'
-  SDL_REF: 'release-3.4.14'
 
 jobs:
   picosystem:
@@ -64,48 +63,3 @@ jobs:
         with:
           files: build/picosystem-tetris.uf2
           generate_release_notes: true
-
-  sdl:
-    name: SDL (desktop)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install build deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build \
-            libx11-dev libxext-dev libxcursor-dev libxrandr-dev \
-            libxi-dev libxfixes-dev libxss-dev libxkbcommon-dev
-
-      # SDL3 is not packaged on the runner image yet, so build it once and cache
-      - name: Cache SDL3
-        id: cache-sdl
-        uses: actions/cache@v4
-        with:
-          path: ~/sdl3-install
-          key: sdl3-${{ runner.os }}-${{ env.SDL_REF }}-x11only
-
-      # This job compiles and links the game, it never opens a window, so SDL3
-      # is built with X11 video only. That avoids pulling in audio and Wayland
-      # dev packages the runner does not ship, and keeps the build fast.
-      - name: Build SDL3
-        if: steps.cache-sdl.outputs.cache-hit != 'true'
-        run: |
-          git clone --depth 1 --branch "$SDL_REF" https://github.com/libsdl-org/SDL sdl-src
-          cmake -S sdl-src -B sdl-build -GNinja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX="$HOME/sdl3-install" \
-            -DSDL_X11=ON \
-            -DSDL_ALSA=OFF -DSDL_PULSEAUDIO=OFF -DSDL_PIPEWIRE=OFF \
-            -DSDL_JACK=OFF -DSDL_SNDIO=OFF \
-            -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF -DSDL_LIBUDEV=OFF \
-            -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF
-          cmake --build sdl-build -j"$(nproc)"
-          cmake --install sdl-build
-
-      - name: Build game
-        run: |
-          cmake -S . -B build_sdl -GNinja -DCMAKE_PREFIX_PATH="$HOME/sdl3-install"
-          cmake --build build_sdl -j"$(nproc)"
