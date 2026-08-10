@@ -5,8 +5,8 @@
 
 using namespace picosystem;
 
-// Frame counting for controlled piece movement
-static uint32_t frameCount = 0;
+// Wall clock of the last update, for a real delta time
+static uint32_t lastUpdateMs = 0;
 
 // PicoSystem-specific input handling
 void handleInput() {
@@ -40,35 +40,29 @@ void handleInput() {
     }
 }
 
-// PicoSystem delay implementation
-void delay_ms(int ms) {
-    sleep(ms);
-}
-
 // PicoSystem life cycle functions
 void init() {
     // Set the PicoSystem renderer as our current renderer
     setDisplayRenderer(getPicoSystemRenderer());
-    
+
     // Initialize the display
     displayInit();
 
     // Initialize the game
     initGame();
+
+    lastUpdateMs = time();
 }
 
 void update(uint32_t tick) {
     // Handle input
     handleInput();
-    
-    // We need to directly control the update rate for the PicoSystem
-    frameCount++;
-    
-    // Update every 8th frame (5 times per second at 40fps)
-    if (frameCount % 8 == 0) {
-        // Force a high tick value to ensure the piece moves down on every call
-        updateGame(3.0f);
-    }
+
+    // picosystem's loop is vsync locked and drops frames when drawing is slow,
+    // so measure the real elapsed time rather than assuming a fixed rate.
+    uint32_t now = time();
+    updateGame((now - lastUpdateMs) / 1000.0f);
+    lastUpdateMs = now;
 }
 
 void draw(uint32_t tick) {

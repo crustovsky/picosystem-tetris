@@ -99,27 +99,49 @@ typedef struct {
 
 ## Building
 
-### For PicoSystem
-
-To build for PicoSystem:
-
-```bash
-mkdir build_pico
-cd build_pico
-cmake .. -DUSE_PICOSYSTEM=ON
-make
-```
-
 ### For SDL (Desktop)
 
-To build for desktop using SDL:
+Needs [SDL3](https://github.com/libsdl-org/SDL) and a C/C++ compiler.
 
 ```bash
-mkdir build_sdl
-cd build_sdl
-cmake ..
-make
+cmake -S . -B build_sdl
+cmake --build build_sdl
+./build_sdl/VibeCodedTetris
 ```
+
+### For PicoSystem
+
+Needs the ARM bare-metal toolchain, the
+[Pico SDK](https://github.com/raspberrypi/pico-sdk) (2.x) and the
+[PicoSystem SDK](https://github.com/pimoroni/picosystem) (`main` — the `v1.0.0`
+tag predates Pico SDK 2.x and will not build against it).
+
+```bash
+# Arch; see the Pico SDK docs for other distributions
+sudo pacman -S arm-none-eabi-gcc arm-none-eabi-newlib arm-none-eabi-binutils
+
+# Clone both SDKs next to this repo
+cd ..
+git clone --depth 1 --branch 2.3.0 https://github.com/raspberrypi/pico-sdk.git
+git clone --depth 1 https://github.com/pimoroni/picosystem.git
+cd VibeCodedTetris
+
+cmake -S . -B build_pico -DUSE_PICOSYSTEM=ON
+cmake --build build_pico
+```
+
+`CMakeLists.txt` picks up `pico-sdk` and `picosystem` automatically when they
+sit next to the repo; set `PICO_SDK_PATH` if yours live elsewhere. The Pico SDK
+builds `picotool` on first configure to produce the `.uf2`, which needs
+`libusb-1.0` development headers.
+
+Use Pico SDK **2.3.0 or newer** on a modern host compiler. Earlier 2.x versions
+fail to build the `pioasm` host tool under GCC 15/16, because recent libstdc++
+no longer includes `<cstdint>` transitively; 2.3.0 adds the missing include.
+
+To flash: hold **X** while powering the PicoSystem on to enter bootloader mode,
+then copy `build_pico/VibeCodedTetris.uf2` onto the `RPI-RP2` drive that
+appears.
 
 ## Controls
 

@@ -13,9 +13,25 @@ option(USE_PICOSYSTEM "Build for PicoSystem" OFF)
 
 if(USE_PICOSYSTEM)
     # PicoSystem build configuration
+    # Prefer an explicit path, then a pico-sdk checkout sitting next to this
+    # repo, and only fall back to downloading the SDK if neither exists.
+    if(NOT PICO_SDK_PATH AND DEFINED ENV{PICO_SDK_PATH})
+        set(PICO_SDK_PATH $ENV{PICO_SDK_PATH})
+    endif()
+    if(NOT PICO_SDK_PATH AND EXISTS ${CMAKE_CURRENT_LIST_DIR}/../pico-sdk/pico_sdk_init.cmake)
+        get_filename_component(PICO_SDK_PATH ${CMAKE_CURRENT_LIST_DIR}/../pico-sdk ABSOLUTE)
+        message(STATUS "Using pico-sdk next to the repo: ${PICO_SDK_PATH}")
+    endif()
     if(NOT PICO_SDK_PATH)
         message(WARNING "PICO_SDK_PATH not specified. Forcing fetch from git!")
         set(PICO_SDK_FETCH_FROM_GIT true)
+    endif()
+
+    # The SDK builds picotool to make the .uf2. Keep it beside the repo so it
+    # is fetched once rather than per build directory.
+    if(NOT PICOTOOL_FETCH_FROM_GIT_PATH AND NOT DEFINED ENV{PICOTOOL_FETCH_FROM_GIT_PATH})
+        get_filename_component(PICOTOOL_FETCH_FROM_GIT_PATH
+            ${CMAKE_CURRENT_LIST_DIR}/../picotool-build ABSOLUTE)
     endif()
 
     include(pico_sdk_import.cmake)

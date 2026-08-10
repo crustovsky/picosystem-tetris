@@ -1,6 +1,5 @@
 #include "tetris_display.h"
 #include "picosystem.hpp"
-#include <cstring>
 
 using namespace picosystem;
 
@@ -47,11 +46,14 @@ static void picosystemFillRect(int x, int y, int width, int height, uint16_t col
 }
 
 /**
- * Draw text centred on (x, y). The default font is an 8x8 grid.
+ * Draw text centred on (x, y). The default font is variable width, so ask
+ * picosystem how wide the string actually is rather than assuming 8px cells.
  */
 static void picosystemDrawText(int x, int y, const char* text, uint16_t color) {
     setPen(color);
-    picosystem::text(text, x - (int)strlen(text) * 4, y - 4);
+    int32_t w = 0, h = 0;
+    measure(text, w, h);
+    picosystem::text(text, x - w / 2, y - h / 2);
 }
 
 /**
