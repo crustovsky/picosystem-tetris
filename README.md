@@ -1,12 +1,27 @@
-# Vibe Coded Tetris
+# PicoSystem Tetris
 
-A Tetris implementation for Raspberry Pi Pico with PicoSystem from Pimoroni, with cross-platform support for SDL.
+A Tetris implementation for the [Pimoroni PicoSystem](https://shop.pimoroni.com/products/picosystem),
+with an SDL build so it can be developed and played on the desktop.
 
 <img src="./tetris_layout.svg">
 
+## Download
+
+Grab the latest `picosystem-tetris.uf2` from the
+[releases page](https://github.com/crustovsky/picosystem-tetris/releases), or
+from the artifacts of any [build run](https://github.com/crustovsky/picosystem-tetris/actions)
+if you want the bleeding edge.
+
+To flash: hold **X** while powering the PicoSystem on to enter bootloader mode,
+then copy the `.uf2` onto the `RPI-RP2` drive that appears. The device reboots
+into the game on its own.
+
 ## Overview
 
-This document provides a summary of the Tetris implementation designed for a 240x240 pixel display with 16bpp color depth. The code follows a modular approach with clean separation between game logic and display handling.
+Built for a 240x240 pixel display at 16bpp, with the game logic kept separate
+from rendering so the same code drives both the handheld and the desktop build.
+The board is a 10x20 grid of square 11x11 cells; blocks are drawn inset by one
+pixel over black, so the gutter between them forms the grid for free.
 
 ## Architecture
 
@@ -106,7 +121,7 @@ Needs [SDL3](https://github.com/libsdl-org/SDL) and a C/C++ compiler.
 ```bash
 cmake -S . -B build_sdl
 cmake --build build_sdl
-./build_sdl/VibeCodedTetris
+./build_sdl/picosystem-tetris
 ```
 
 ### For PicoSystem
@@ -122,9 +137,10 @@ sudo pacman -S arm-none-eabi-gcc arm-none-eabi-newlib arm-none-eabi-binutils
 
 # Clone both SDKs next to this repo
 cd ..
+git clone https://github.com/crustovsky/picosystem-tetris.git
 git clone --depth 1 --branch 2.3.0 https://github.com/raspberrypi/pico-sdk.git
 git clone --depth 1 https://github.com/pimoroni/picosystem.git
-cd VibeCodedTetris
+cd picosystem-tetris
 
 cmake -S . -B build_pico -DUSE_PICOSYSTEM=ON
 cmake --build build_pico
@@ -139,9 +155,8 @@ Use Pico SDK **2.3.0 or newer** on a modern host compiler. Earlier 2.x versions
 fail to build the `pioasm` host tool under GCC 15/16, because recent libstdc++
 no longer includes `<cstdint>` transitively; 2.3.0 adds the missing include.
 
-To flash: hold **X** while powering the PicoSystem on to enter bootloader mode,
-then copy `build_pico/VibeCodedTetris.uf2` onto the `RPI-RP2` drive that
-appears.
+This produces `build_pico/picosystem-tetris.uf2`; flash it as described under
+[Download](#download).
 
 ## Controls
 
@@ -185,3 +200,19 @@ To add support for a new platform:
 - Drawing optimizations for speed (using primitives like `fillRect`)
 - Minimal dynamic memory allocation
 - Efficient update logic with time-based movement
+
+## Continuous integration
+
+`.github/workflows/build.yml` builds both targets on every push to `main` and
+every pull request. The PicoSystem `.uf2` is uploaded as a build artifact, and
+pushing a `v*` tag additionally publishes it to a GitHub release:
+
+```bash
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+SDK versions are pinned in the workflow so builds stay reproducible.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE).

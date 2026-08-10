@@ -1,0 +1,100 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Pinned so a build is reproducible. Pico SDK 2.3.0 is the first 2.x that
+  # builds the pioasm host tool under modern GCC.
+  PICO_SDK_REF: '2.3.0'
+  PICOSYSTEM_REF: 'd5b83173abc13a8c55d6db94ad68179904a4f6e2'
+  SDL_REF: 'release-3.4.14'
+
+jobs:
+  picosystem:
+    name: PicoSystem (.uf2)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: picosystem-tetris
+
+      # CMakeLists finds both SDKs when they sit next to the repo
+      - uses: actions/checkout@v4
+        with:
+          repository: raspberrypi/pico-sdk
+          ref: ${{ env.PICO_SDK_REF }}
+          path: pico-sdk
+      - uses: actions/checkout@v4
+        with:
+          repository: pimoroni/picosystem
+          ref: ${{ env.PICOSYSTEM_REF }}
+          path: picosystem
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake gcc-arm-none-eabi libnewlib-arm-none-eabi \
+            libstdc++-arm-none-eabi-newlib libusb-1.0-0-dev pkg-config
+
+      - name: Build
+        run: |
+          cmake -S picosystem-tetris -B build -DUSE_PICOSYSTEM=ON
+          cmake --build build -j"$(nproc)"
+
+      - name: Report size
+        run: arm-none-eabi-size build/picosystem-tetris.elf
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: picosystem-tetris-uf2
+          path: build/picosystem-tetris.uf2
+          if-no-files-found: error
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/picosystem-tetris.uf2
+          generate_release_notes: true
+
+  sdl:
+    name: SDL (desktop)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build libx11-dev libxext-dev
+
+      # SDL3 is not packaged on the runner image yet, so build it once and cache
+      - name: Cache SDL3
+        id: cache-sdl
+        uses: actions/cache@v4
+        with:
+          path: ~/sdl3-install
+          key: sdl3-${{ runner.os }}-${{ env.SDL_REF }}
+
+      - name: Build SDL3
+        if: steps.cache-sdl.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch "$SDL_REF" https://github.com/libsdl-org/SDL sdl-src
+          cmake -S sdl-src -B sdl-build -GNinja \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$HOME/sdl3-install"
+          cmake --build sdl-build -j"$(nproc)"
+          cmake --install sdl-build
+
+      - name: Build game
+        run: |
+          cmake -S . -B build_sdl -GNinja -DCMAKE_PREFIX_PATH="$HOME/sdl3-install"
+          cmake --build build_sdl -j"$(nproc)"
