@@ -73,8 +73,8 @@ The implementation consists of the following files:
 ### Display Interface (`tetris_display.h` & `tetris_display.c`)
 
 #### Display Layout (240×240):
-- Game board: 110×220 pixels at (6, 10) — 10×20 grid of **square 11×11 cells**
-- Side panel: 108 pixels wide at x=126 — next-piece preview and stats
+- Game board: 110×220 pixels at (6, 10), a 10×20 grid of **square 11×11 cells**
+- Side panel: 108 pixels wide at x=126, holding the next-piece preview and stats
 - No title bar; the space is spent on the board instead
 
 Blocks are drawn inset by 1 pixel over a black board, so the 1-pixel gutter
@@ -128,7 +128,7 @@ cmake --build build_sdl
 
 Needs the ARM bare-metal toolchain, the
 [Pico SDK](https://github.com/raspberrypi/pico-sdk) (2.x) and the
-[PicoSystem SDK](https://github.com/pimoroni/picosystem) (`main` — the `v1.0.0`
+[PicoSystem SDK](https://github.com/pimoroni/picosystem) (`main`, the `v1.0.0`
 tag predates Pico SDK 2.x and will not build against it).
 
 ```bash
@@ -216,4 +216,4 @@ firmware is built in CI; the desktop SDL build is for local development.
 
 ## Licence
 
-MIT — see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE).
