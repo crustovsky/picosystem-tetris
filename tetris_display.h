@@ -13,54 +13,47 @@ extern "C" {
 #define DISPLAY_WIDTH 240
 #define DISPLAY_HEIGHT 240
 
-// Game board dimensions and position
-#define BOARD_X 10
-#define BOARD_Y 25
-#define BOARD_PIXEL_WIDTH 150
-#define BOARD_PIXEL_HEIGHT 200
-#define CELL_WIDTH 15
-#define CELL_HEIGHT 10
+// Board: square cells. 10x20 cells at 11px = 110x220, centred vertically.
+#define CELL_SIZE 11
+#define BOARD_PIXEL_WIDTH (BOARD_WIDTH * CELL_SIZE)   // 110
+#define BOARD_PIXEL_HEIGHT (BOARD_HEIGHT * CELL_SIZE) // 220
+#define BOARD_X 6
+#define BOARD_Y 10
 
-// Next piece preview dimensions and position
-#define NEXT_X 175
-#define NEXT_Y 30
-#define NEXT_WIDTH 50
-#define NEXT_HEIGHT 50
-#define NEXT_CELL_SIZE 10
+// Side panel: everything that is not the board
+#define PANEL_X 126
+#define PANEL_WIDTH 108
+#define PANEL_CX (PANEL_X + PANEL_WIDTH / 2)
 
-// Score, level, and lines positions
-#define SCORE_LABEL_Y 110
-#define SCORE_Y 115
-#define SCORE_HEIGHT 20
+// Next-piece preview (also square cells)
+#define NEXT_CELL_SIZE 11
+#define NEXT_BOX_SIZE (TETROMINO_SIZE * NEXT_CELL_SIZE + 2) // 46
+#define NEXT_BOX_X (PANEL_X + (PANEL_WIDTH - NEXT_BOX_SIZE) / 2)
+#define NEXT_BOX_Y 28
 
-#define LEVEL_LABEL_Y 150
-#define LEVEL_Y 155
-#define LEVEL_HEIGHT 20
+// Stat rows: label above value
+#define SCORE_Y 92
+#define LEVEL_Y 132
+#define LINES_Y 172
+#define STAT_VALUE_DY 14
 
-#define LINES_LABEL_Y 190
-#define LINES_Y 195
-#define LINES_HEIGHT 20
-
-#define INFO_X 175
-#define INFO_WIDTH 50
-#define TEXT_HEIGHT 20
-
-// Colors in RGB565 format (16-bit)
-#define COLOR_BLACK 0x0000      // 0, 0, 0
-#define COLOR_WHITE 0xFFFF      // 255, 255, 255
+// Colours in RGB565 format (16-bit)
+#define COLOR_BLACK 0x0000
+#define COLOR_WHITE 0xFFFF
+#define COLOR_BG 0x2104         // 32, 32, 32 - page background
 #define COLOR_GRAY 0x8410       // 128, 128, 128
 #define COLOR_DARK_GRAY 0x4208  // 64, 64, 64
 #define COLOR_LIGHT_GRAY 0xC618 // 192, 192, 192
-#define COLOR_BLUE 0x001F       // 0, 0, 255
-#define COLOR_RED 0xF800        // 255, 0, 0
-#define COLOR_GREEN 0x07E0      // 0, 255, 0
-#define COLOR_CYAN 0x07FF       // 0, 255, 255
-#define COLOR_MAGENTA 0xF81F    // 255, 0, 255
-#define COLOR_YELLOW 0xFFE0     // 255, 255, 0
-#define COLOR_ORANGE 0xFD20     // 255, 128, 0
-#define COLOR_PURPLE 0x8010     // 128, 0, 128
+#define COLOR_BLUE 0x001F
+#define COLOR_RED 0xF800
+#define COLOR_GREEN 0x07E0
+#define COLOR_CYAN 0x07FF
+#define COLOR_MAGENTA 0xF81F
+#define COLOR_YELLOW 0xFFE0
+#define COLOR_ORANGE 0xFD20
+#define COLOR_PURPLE 0x8010
 
-// Color structure to use RGBA components directly
+// Colour structure to use RGBA components directly
 typedef struct {
     uint8_t r;  // Red component (0-255)
     uint8_t g;  // Green component (0-255)
@@ -80,16 +73,12 @@ typedef struct {
     void (*init)();
     // Clear the display with a specific color
     void (*clear)(uint16_t color);
-    // Draw a single pixel
-    void (*drawPixel)(int x, int y, uint16_t color);
-    // Draw a line from (x0,y0) to (x1,y1)
-    void (*drawLine)(int x0, int y0, int x1, int y1, uint16_t color);
     // Draw a rectangle outline
     void (*drawRect)(int x, int y, int width, int height, uint16_t color);
     // Draw a filled rectangle
     void (*fillRect)(int x, int y, int width, int height, uint16_t color);
-    // Draw text
-    void (*drawText)(int x, int y, const char* text, uint16_t color, uint8_t size);
+    // Draw text, centred on (x, y)
+    void (*drawText)(int x, int y, const char* text, uint16_t color);
     // Update display (flush buffer to screen)
     void (*update)();
 } DisplayRenderer;
@@ -103,21 +92,17 @@ void setDisplayRenderer(DisplayRenderer* renderer);
 // Generic display functions that route to the current renderer
 void displayInit();
 void displayClear(uint16_t color);
-void displayDrawPixel(int x, int y, uint16_t color);
-void displayDrawLine(int x0, int y0, int x1, int y1, uint16_t color);
 void displayDrawRect(int x, int y, int width, int height, uint16_t color);
 void displayFillRect(int x, int y, int width, int height, uint16_t color);
-void displayDrawText(int x, int y, const char* text, uint16_t color, uint8_t size);
+void displayDrawText(int x, int y, const char* text, uint16_t color);
 void displayUpdate();
 
 // Tetris drawing functions (platform-independent)
-void clearScreen();
-void drawTitle();
 void drawBoard(const Game* game);
 void drawNextPiece(const Game* game);
 void drawStats(const Game* game);
 void drawGameState(const Game* game);
-void drawGame(float tick, const Game* game);
+void drawGame(const Game* game);
 
 #ifdef __cplusplus
 }

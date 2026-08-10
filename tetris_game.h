@@ -65,11 +65,15 @@ void initGame();
 void updateGame(float tick);
 bool moveTetromino(Direction dir);
 bool rotateTetromino();
+void hardDrop();
 void createNewTetromino(Tetromino* tetromino);
 bool checkCollision(Tetromino tetromino);
 void placeTetromino();
 void clearLines();
 void rotateTetrominoMatrix(Tetromino* tetromino);
+
+// Row the current piece would land on if dropped (used to draw the ghost)
+int ghostDropY(const Game* game);
 
 #ifdef __cplusplus
 }

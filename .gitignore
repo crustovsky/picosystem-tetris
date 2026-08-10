@@ -7,3 +7,6 @@
 /.idea/VibeCodedTetris.iml
 /cmake-build-pico-debug/
 /cmake-build-sdl-debug/
+/build_sdl/
+/build_pico/
+/.claude/

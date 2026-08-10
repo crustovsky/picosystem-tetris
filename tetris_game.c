@@ -97,28 +97,42 @@ void createNewTetromino(Tetromino* tetromino) {
     }
 }
 
-// Check for collision between current tetromino and board
-bool checkCollision(Tetromino tetromino) {
+// Check for collision between a tetromino and a given board
+static bool collides(const Game* g, Tetromino tetromino) {
     for (int y = 0; y < TETROMINO_SIZE; y++) {
         for (int x = 0; x < TETROMINO_SIZE; x++) {
             if (tetromino.blocks[y][x]) {
                 int boardX = tetromino.x + x;
                 int boardY = tetromino.y + y;
-                
+
                 // Check bounds
-                if (boardX < 0 || boardX >= BOARD_WIDTH || 
+                if (boardX < 0 || boardX >= BOARD_WIDTH ||
                     boardY >= BOARD_HEIGHT) {
                     return true;
                 }
-                
+
                 // Check collision with placed blocks (not with empty spaces)
-                if (boardY >= 0 && game.board[boardY][boardX]) {
+                if (boardY >= 0 && g->board[boardY][boardX]) {
                     return true;
                 }
             }
         }
     }
     return false;
+}
+
+// Check for collision between current tetromino and board
+bool checkCollision(Tetromino tetromino) {
+    return collides(&game, tetromino);
+}
+
+// Row the current piece would land on if dropped
+int ghostDropY(const Game* g) {
+    Tetromino temp = g->currentPiece;
+    while (!collides(g, temp)) {
+        temp.y++;
+    }
+    return temp.y - 1;
 }
 
 // Move the tetromino in the specified direction
@@ -182,6 +196,12 @@ bool rotateTetromino() {
     }
     
     return false;
+}
+
+// Drop the current tetromino straight to its landing row and lock it
+void hardDrop() {
+    game.currentPiece.y = ghostDropY(&game);
+    placeTetromino();
 }
 
 // Place the current tetromino on the board and spawn a new one

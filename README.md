@@ -51,14 +51,19 @@ The implementation consists of the following files:
 - `updateGame(float tick)` - Update game state based on elapsed time
 - `moveTetromino(Direction dir)` - Move the current piece
 - `rotateTetromino()` - Rotate the current piece
+- `hardDrop()` - Drop the current piece straight to its landing row
+- `ghostDropY()` - Row the current piece would land on (used to draw the ghost)
 - `clearLines()` - Clear full lines and update score
 
 ### Display Interface (`tetris_display.h` & `tetris_display.c`)
 
 #### Display Layout (240×240):
-- Game board area: 150×200 pixels (left side)
-- Information panel: 60×200 pixels (right side)
-- Title bar: 240×20 pixels (top)
+- Game board: 110×220 pixels at (6, 10) — 10×20 grid of **square 11×11 cells**
+- Side panel: 108 pixels wide at x=126 — next-piece preview and stats
+- No title bar; the space is spent on the board instead
+
+Blocks are drawn inset by 1 pixel over a black board, so the 1-pixel gutter
+between them forms the grid without any separate grid-line drawing.
 
 #### Renderer Interface:
 The display system is now abstracted through a renderer interface:
@@ -66,20 +71,16 @@ The display system is now abstracted through a renderer interface:
 typedef struct {
     void (*init)();
     void (*clear)(uint16_t color);
-    void (*drawPixel)(int x, int y, uint16_t color);
-    void (*drawLine)(int x0, int y0, int x1, int y1, uint16_t color);
     void (*drawRect)(int x, int y, int width, int height, uint16_t color);
     void (*fillRect)(int x, int y, int width, int height, uint16_t color);
-    void (*drawText)(int x, int y, const char* text, uint16_t color, uint8_t size);
+    void (*drawText)(int x, int y, const char* text, uint16_t color);
     void (*update)();
 } DisplayRenderer;
 ```
 
 #### Tetris-Specific Drawing Functions:
-- `clearScreen()` - Clear screen for new frame
-- `drawTitle()` - Draw game title
-- `drawBoard()` - Draw game board with placed blocks and current piece
-- `drawNextPiece()` - Show preview of the next piece
+- `drawBoard()` - Draw the board, the landing ghost and the current piece
+- `drawNextPiece()` - Show preview of the next piece, centred on its bounding box
 - `drawStats()` - Display score, level, and lines cleared
 - `drawGameState()` - Show game over or paused message
 - `drawGame()` - Main drawing function that calls all others
@@ -125,14 +126,20 @@ make
 ### PicoSystem
 - **Left/Right/Down**: Move piece
 - **A**: Rotate piece
+- **Y**: Hard drop
 - **B**: Pause/Unpause
 - **X**: Restart after game over
 
 ### SDL
 - **Arrow Keys**: Move and rotate piece
+- **Space**: Hard drop
 - **P**: Pause/Unpause
-- **R**: Restart after game over
+- **R**: Restart
 - **ESC**: Quit
+
+The SDL window opens at 3x scale (720×720) and is resizable; drawing always
+happens in 240×240 coordinates and is integer-scaled to fit, so the desktop
+build is pixel-identical to the PicoSystem one.
 
 ## Development
 

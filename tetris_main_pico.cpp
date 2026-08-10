@@ -23,6 +23,9 @@ void handleInput() {
     if (pressed(DOWN)) {
         moveTetromino(DIR_DOWN);
     }
+    if (pressed(Y) && game.state == GAME_ACTIVE) {
+        hardDrop();
+    }
     if (pressed(B)) {
         // Toggle pause
         if (game.state == GAME_ACTIVE) {
@@ -70,5 +73,5 @@ void update(uint32_t tick) {
 
 void draw(uint32_t tick) {
     // Draw the game
-    drawGame(tick / 1000.0f, &game);
+    drawGame(&game);
 }
