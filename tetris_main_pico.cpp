@@ -23,7 +23,7 @@ void handleInput() {
     if (pressed(DOWN)) {
         moveTetromino(DIR_DOWN);
     }
-    if (pressed(Y) && game.state == GAME_ACTIVE) {
+    if (pressed(Y)) {
         hardDrop();
     }
     if (pressed(B)) {

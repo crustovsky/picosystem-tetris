@@ -19,9 +19,7 @@ static bool handleInput() {
             case SDL_SCANCODE_RIGHT: moveTetromino(DIR_RIGHT); break;
             case SDL_SCANCODE_DOWN:  moveTetromino(DIR_DOWN); break;
             case SDL_SCANCODE_UP:    rotateTetromino(); break;
-            case SDL_SCANCODE_SPACE:
-                if (game.state == GAME_ACTIVE) hardDrop();
-                break;
+            case SDL_SCANCODE_SPACE: hardDrop(); break;
             case SDL_SCANCODE_P:
                 if (game.state == GAME_ACTIVE) game.state = GAME_PAUSED;
                 else if (game.state == GAME_PAUSED) game.state = GAME_ACTIVE;

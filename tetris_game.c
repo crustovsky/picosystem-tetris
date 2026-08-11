@@ -137,8 +137,13 @@ int ghostDropY(const Game* g) {
 
 // Move the tetromino in the specified direction
 bool moveTetromino(Direction dir) {
+    // Ignore movement while paused or after game over
+    if (game.state != GAME_ACTIVE) {
+        return false;
+    }
+
     Tetromino temp = game.currentPiece;
-    
+
     switch (dir) {
         case DIR_LEFT:
             temp.x--;
@@ -185,8 +190,13 @@ void rotateTetrominoMatrix(Tetromino* tetromino) {
 
 // Rotate the current tetromino
 bool rotateTetromino() {
+    // Ignore rotation while paused or after game over
+    if (game.state != GAME_ACTIVE) {
+        return false;
+    }
+
     Tetromino temp = game.currentPiece;
-    
+
     rotateTetrominoMatrix(&temp);
     
     if (!checkCollision(temp)) {
@@ -200,6 +210,11 @@ bool rotateTetromino() {
 
 // Drop the current tetromino straight to its landing row and lock it
 void hardDrop() {
+    // Ignore drops while paused or after game over
+    if (game.state != GAME_ACTIVE) {
+        return;
+    }
+
     game.currentPiece.y = ghostDropY(&game);
     placeTetromino();
 }
