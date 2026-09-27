@@ -67,6 +67,7 @@ The implementation consists of the following files:
 - `moveTetromino(Direction dir)` - Move the current piece
 - `rotateTetromino()` - Rotate the current piece
 - `hardDrop()` - Drop the current piece straight to its landing row
+- `autoPlace()` - Drop the current piece in the best reachable spot
 - `ghostDropY()` - Row the current piece would land on (used to draw the ghost)
 - `clearLines()` - Clear full lines and update score
 
@@ -161,15 +162,19 @@ This produces `build_pico/picosystem-tetris.uf2`; flash it as described under
 ## Controls
 
 ### PicoSystem
-- **Left/Right/Down**: Move piece
-- **A**: Rotate piece
-- **Y**: Hard drop
-- **B**: Pause/Unpause
-- **X**: Restart after game over
+- **Left/Right**: Move piece
+- **Up**: Hard drop
+- **Down** or **B** (hold): Soft drop
+- **Y**: Rotate piece
+- **A**: Auto place (drop the piece in the best reachable spot)
+- **X**: Pause/Unpause, restart after game over
 
 ### SDL
-- **Arrow Keys**: Move and rotate piece
-- **Space**: Hard drop
+- **Left/Right**: Move piece
+- **Up**: Hard drop
+- **Down** (hold): Soft drop
+- **Z**: Rotate piece
+- **A**: Auto place
 - **P**: Pause/Unpause
 - **R**: Restart
 - **ESC**: Quit

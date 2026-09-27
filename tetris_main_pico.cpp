@@ -10,9 +10,8 @@ static uint32_t lastUpdateMs = 0;
 
 // PicoSystem-specific input handling
 void handleInput() {
-    // Process PicoSystem button inputs
-    if (pressed(A)) {
-        rotateTetromino();
+    if (pressed(UP)) {
+        hardDrop();
     }
     if (pressed(LEFT)) {
         moveTetromino(DIR_LEFT);
@@ -20,23 +19,21 @@ void handleInput() {
     if (pressed(RIGHT)) {
         moveTetromino(DIR_RIGHT);
     }
-    if (pressed(DOWN)) {
-        moveTetromino(DIR_DOWN);
-    }
     if (pressed(Y)) {
-        hardDrop();
+        rotateTetromino();
     }
-    if (pressed(B)) {
-        // Toggle pause
+    if (pressed(A)) {
+        autoPlace();
+    }
+    if (pressed(X)) {
+        // Toggle pause, or restart once the game is over
         if (game.state == GAME_ACTIVE) {
             game.state = GAME_PAUSED;
         } else if (game.state == GAME_PAUSED) {
             game.state = GAME_ACTIVE;
+        } else {
+            initGame();
         }
-    }
-    if (pressed(X) && game.state == GAME_OVER) {
-        // Restart game on X button if game is over
-        initGame();
     }
 }
 
@@ -61,7 +58,8 @@ void update(uint32_t tick) {
     // picosystem's loop is vsync locked and drops frames when drawing is slow,
     // so measure the real elapsed time rather than assuming a fixed rate.
     uint32_t now = time();
-    updateGame((now - lastUpdateMs) / 1000.0f);
+    // Down and B are held for a soft drop
+    updateGame((now - lastUpdateMs) / 1000.0f, button(DOWN) || button(B));
     lastUpdateMs = now;
 }
 
