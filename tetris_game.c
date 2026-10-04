@@ -7,6 +7,9 @@
 // Global game instance
 Game game;
 
+// Set by autoPlace() so the piece it locks is recorded in game.autoPlaced
+static bool markPlacement = false;
+
 // Tetromino definitions
 const bool TETROMINOS[SHAPE_COUNT][TETROMINO_SIZE][TETROMINO_SIZE] = {
     // I-shape
@@ -71,6 +74,7 @@ void initGame() {
             game.board[y][x] = 0;
         }
     }
+    memset(game.autoPlaced, 0, sizeof game.autoPlaced);
     
     // Initialise game state
     game.state = GAME_ACTIVE;
@@ -334,11 +338,16 @@ void autoPlace() {
     }
 
     game.currentPiece = best;
+    markPlacement = true;
     placeTetromino();
 }
 
 // Place the current tetromino on the board and spawn a new one
 void placeTetromino() {
+    bool mark = markPlacement;
+    markPlacement = false;
+    memset(game.autoPlaced, 0, sizeof game.autoPlaced);
+
     // Place the current tetromino on the board
     for (int y = 0; y < TETROMINO_SIZE; y++) {
         for (int x = 0; x < TETROMINO_SIZE; x++) {
@@ -354,6 +363,7 @@ void placeTetromino() {
                 
                 // Mark the cell as filled with the shape type + 1 (0 is empty)
                 game.board[boardY][boardX] = game.currentPiece.shape + 1;
+                game.autoPlaced[boardY][boardX] = mark;
             }
         }
     }
@@ -394,12 +404,14 @@ void clearLines() {
             for (int moveY = y; moveY > 0; moveY--) {
                 for (int x = 0; x < BOARD_WIDTH; x++) {
                     game.board[moveY][x] = game.board[moveY - 1][x];
+                    game.autoPlaced[moveY][x] = game.autoPlaced[moveY - 1][x];
                 }
             }
             
             // Clear the top line
             for (int x = 0; x < BOARD_WIDTH; x++) {
                 game.board[0][x] = 0;
+                game.autoPlaced[0][x] = false;
             }
             
             // Stay on the same line to check if the moved line is also full

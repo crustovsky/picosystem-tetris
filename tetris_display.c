@@ -87,7 +87,8 @@ static void drawBlock(int px, int py, int size, uint16_t color) {
 }
 
 /**
- * Draw the game board, the landing ghost and the falling piece
+ * Draw the game board, the auto place marker, the landing ghost and the
+ * falling piece
  */
 void drawBoard(const Game* game) {
     displayFillRect(BOARD_X, BOARD_Y, BOARD_PIXEL_WIDTH, BOARD_PIXEL_HEIGHT, COLOR_BLACK);
@@ -98,6 +99,16 @@ void drawBoard(const Game* game) {
             if (game->board[y][x] > 0) {
                 drawBlock(BOARD_X + x * CELL_SIZE, BOARD_Y + y * CELL_SIZE,
                           CELL_SIZE, TETROMINO_COLORS[game->board[y][x]]);
+            }
+        }
+    }
+
+    // Outline the last auto placed piece so it is clear where it went
+    for (int y = 0; y < BOARD_HEIGHT; y++) {
+        for (int x = 0; x < BOARD_WIDTH; x++) {
+            if (game->autoPlaced[y][x]) {
+                displayDrawRect(BOARD_X + x * CELL_SIZE + 1, BOARD_Y + y * CELL_SIZE + 1,
+                                CELL_SIZE - 2, CELL_SIZE - 2, COLOR_WHITE);
             }
         }
     }
