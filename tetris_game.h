@@ -51,6 +51,8 @@ typedef struct {
     int board[BOARD_HEIGHT][BOARD_WIDTH];
     Tetromino currentPiece;
     Tetromino nextPiece;
+    // Cells of the last auto placed piece, kept until the next piece locks
+    bool autoPlaced[BOARD_HEIGHT][BOARD_WIDTH];
     GameState state;
     int score;
     int level;
