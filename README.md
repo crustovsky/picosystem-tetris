@@ -67,8 +67,8 @@ The implementation consists of the following files:
 - `moveTetromino(Direction dir)` - Move the current piece
 - `rotateTetromino()` - Rotate the current piece
 - `hardDrop()` - Drop the current piece straight to its landing row
-- `autoPlace()` - Drop the current piece in the best reachable spot and mark it
-  in `game.autoPlaced` so the display can outline it
+- `autoPlace()` - Show the best reachable spot for the current piece, or drop
+  the piece there if the hint is already showing
 - `ghostDropY()` - Row the current piece would land on (used to draw the ghost)
 - `clearLines()` - Clear full lines and update score
 
@@ -167,8 +167,9 @@ This produces `build_pico/picosystem-tetris.uf2`; flash it as described under
 - **Up**: Hard drop
 - **Down** or **B** (hold): Soft drop
 - **Y**: Rotate piece
-- **A**: Auto place (drop the piece in the best reachable spot; the piece stays
-  outlined in white until the next one lands, so you can see where it went)
+- **A**: Auto place. The first press outlines the best reachable spot in the
+  colour of the piece, the second press drops the piece there. Moving or
+  rotating the piece dismisses the hint.
 - **X**: Pause/Unpause, restart after game over
 
 ### SDL
@@ -176,7 +177,7 @@ This produces `build_pico/picosystem-tetris.uf2`; flash it as described under
 - **Up**: Hard drop
 - **Down** (hold): Soft drop
 - **Z**: Rotate piece
-- **A**: Auto place
+- **A**: Auto place (press once for the hint, again to drop)
 - **P**: Pause/Unpause
 - **R**: Restart
 - **ESC**: Quit
