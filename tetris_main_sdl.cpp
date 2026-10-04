@@ -17,9 +17,9 @@ static bool handleInput() {
         switch (event.key.scancode) {
             case SDL_SCANCODE_LEFT:  moveTetromino(DIR_LEFT); break;
             case SDL_SCANCODE_RIGHT: moveTetromino(DIR_RIGHT); break;
-            case SDL_SCANCODE_DOWN:  moveTetromino(DIR_DOWN); break;
-            case SDL_SCANCODE_UP:    rotateTetromino(); break;
-            case SDL_SCANCODE_SPACE: hardDrop(); break;
+            case SDL_SCANCODE_UP:    hardDrop(); break;
+            case SDL_SCANCODE_Z:     rotateTetromino(); break;
+            case SDL_SCANCODE_A:     autoPlace(); break;
             case SDL_SCANCODE_P:
                 if (game.state == GAME_ACTIVE) game.state = GAME_PAUSED;
                 else if (game.state == GAME_PAUSED) game.state = GAME_ACTIVE;
@@ -52,7 +52,8 @@ int main(int argc, char* argv[]) {
         if (!handleInput()) {
             break;
         }
-        updateGame(deltaTime);
+        // Down is held for a soft drop
+        updateGame(deltaTime, SDL_GetKeyboardState(NULL)[SDL_SCANCODE_DOWN]);
         drawGame(&game);
 
         uint64_t frameTime = SDL_GetTicks() - frameStart;

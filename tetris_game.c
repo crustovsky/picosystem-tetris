@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include "tetris_game.h"
 
@@ -126,13 +127,17 @@ bool checkCollision(Tetromino tetromino) {
     return collides(&game, tetromino);
 }
 
+// Row a tetromino would land on if dropped
+static int dropY(const Game* g, Tetromino tetromino) {
+    while (!collides(g, tetromino)) {
+        tetromino.y++;
+    }
+    return tetromino.y - 1;
+}
+
 // Row the current piece would land on if dropped
 int ghostDropY(const Game* g) {
-    Tetromino temp = g->currentPiece;
-    while (!collides(g, temp)) {
-        temp.y++;
-    }
-    return temp.y - 1;
+    return dropY(g, g->currentPiece);
 }
 
 // Move the tetromino in the specified direction
@@ -219,6 +224,119 @@ void hardDrop() {
     placeTetromino();
 }
 
+// Is a cell filled, treating the walls and floor as filled
+static bool filled(int board[BOARD_HEIGHT][BOARD_WIDTH], int x, int y) {
+    if (x < 0 || x >= BOARD_WIDTH || y >= BOARD_HEIGHT) return true;
+    return y >= 0 && board[y][x];
+}
+
+// Score the board left after locking a tetromino, higher is better.
+// Features and weights are Pierre Dellacherie's, as tuned for El-Tetris.
+static float placementScore(const Game* g, Tetromino t) {
+    int board[BOARD_HEIGHT][BOARD_WIDTH];
+    memcpy(board, g->board, sizeof board);
+
+    int top = BOARD_HEIGHT, bottom = 0;
+    for (int y = 0; y < TETROMINO_SIZE; y++) {
+        for (int x = 0; x < TETROMINO_SIZE; x++) {
+            if (t.blocks[y][x]) {
+                // Locking above the board ends the game
+                if (t.y + y < 0) {
+                    return -1e9f;
+                }
+                board[t.y + y][t.x + x] = 1;
+                if (t.y + y < top) top = t.y + y;
+                if (t.y + y > bottom) bottom = t.y + y;
+            }
+        }
+    }
+    float landingHeight = BOARD_HEIGHT - (top + bottom) / 2.0f;
+
+    // Remove full rows by copying the others down
+    int lines = 0;
+    int dst = BOARD_HEIGHT - 1;
+    for (int y = BOARD_HEIGHT - 1; y >= 0; y--) {
+        bool full = true;
+        for (int x = 0; x < BOARD_WIDTH; x++) {
+            if (!board[y][x]) full = false;
+        }
+        if (full) {
+            lines++;
+        } else {
+            memcpy(board[dst--], board[y], sizeof board[y]);
+        }
+    }
+    while (dst >= 0) {
+        memset(board[dst--], 0, sizeof board[0]);
+    }
+
+    int rowTransitions = 0, colTransitions = 0, holes = 0, wells = 0;
+    for (int y = 0; y < BOARD_HEIGHT; y++) {
+        for (int x = 0; x <= BOARD_WIDTH; x++) {
+            if (filled(board, x - 1, y) != filled(board, x, y)) rowTransitions++;
+        }
+    }
+    for (int x = 0; x < BOARD_WIDTH; x++) {
+        int wellDepth = 0;
+        for (int y = 0; y < BOARD_HEIGHT; y++) {
+            bool cell = filled(board, x, y);
+            if (filled(board, x, y - 1) != cell) colTransitions++;
+            if (!cell && filled(board, x, y - 1)) holes++;
+            if (!cell && filled(board, x - 1, y) && filled(board, x + 1, y)) {
+                wells += ++wellDepth;
+            } else {
+                wellDepth = 0;
+            }
+        }
+        if (!filled(board, x, BOARD_HEIGHT - 1)) colTransitions++;
+    }
+
+    return -4.500158f * landingHeight + 3.418127f * lines
+         - 3.217888f * rowTransitions - 9.348695f * colTransitions
+         - 7.899265f * holes - 3.385597f * wells;
+}
+
+// Drop the current piece in the best spot it can reach by rotating in place
+// and sliding sideways, as a player would
+void autoPlace() {
+    if (game.state != GAME_ACTIVE) {
+        return;
+    }
+
+    Tetromino rotated = game.currentPiece;
+    Tetromino best = game.currentPiece;
+    float bestScore = -1e30f;
+
+    for (int r = 0; r < 4; r++) {
+        for (int x = -TETROMINO_SIZE + 1; x < BOARD_WIDTH; x++) {
+            // Slide towards x, giving up if anything is in the way
+            Tetromino t = rotated;
+            while (t.x != x && !collides(&game, t)) {
+                t.x += x > t.x ? 1 : -1;
+            }
+            if (collides(&game, t)) {
+                continue;
+            }
+
+            t.y = dropY(&game, t);
+            float score = placementScore(&game, t);
+            if (score > bestScore) {
+                bestScore = score;
+                best = t;
+            }
+        }
+
+        rotateTetrominoMatrix(&rotated);
+        rotated.rotation = (rotated.rotation + 1) % 4;
+        if (collides(&game, rotated)) {
+            break;
+        }
+    }
+
+    game.currentPiece = best;
+    placeTetromino();
+}
+
 // Place the current tetromino on the board and spawn a new one
 void placeTetromino() {
     // Place the current tetromino on the board
@@ -302,8 +420,8 @@ void clearLines() {
     }
 }
 
-// Update game state
-void updateGame(float tick) {
+// Update game state, dropping faster while softDrop is held
+void updateGame(float tick, bool softDrop) {
     static float accumulator = 0;
     static float moveDownInterval = 1.0f; // seconds
     
@@ -314,6 +432,7 @@ void updateGame(float tick) {
     // Adjust speed based on level
     float levelSpeed = moveDownInterval - ((float)game.level * 0.05f);
     if (levelSpeed < 0.1f) levelSpeed = 0.1f; // Cap the speed
+    if (softDrop && levelSpeed > 0.05f) levelSpeed = 0.05f;
     
     // Move a piece down automatically
     accumulator += tick;
@@ -321,8 +440,4 @@ void updateGame(float tick) {
         moveTetromino(DIR_DOWN);
         accumulator = 0;
     }
-    
-    // Additional game logic can be added here
-    // This would include handling user input, which would
-    // call moveTetromino() and rotateTetromino()
 }

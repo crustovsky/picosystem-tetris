@@ -62,10 +62,11 @@ extern Game game;
 
 // Game functions
 void initGame();
-void updateGame(float tick);
+void updateGame(float tick, bool softDrop);
 bool moveTetromino(Direction dir);
 bool rotateTetromino();
 void hardDrop();
+void autoPlace();
 void createNewTetromino(Tetromino* tetromino);
 bool checkCollision(Tetromino tetromino);
 void placeTetromino();
