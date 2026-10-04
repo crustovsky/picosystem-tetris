@@ -87,7 +87,7 @@ static void drawBlock(int px, int py, int size, uint16_t color) {
 }
 
 /**
- * Draw the game board, the auto place marker, the landing ghost and the
+ * Draw the game board, the landing ghost, the auto place hint and the
  * falling piece
  */
 void drawBoard(const Game* game) {
@@ -103,16 +103,6 @@ void drawBoard(const Game* game) {
         }
     }
 
-    // Outline the last auto placed piece so it is clear where it went
-    for (int y = 0; y < BOARD_HEIGHT; y++) {
-        for (int x = 0; x < BOARD_WIDTH; x++) {
-            if (game->autoPlaced[y][x]) {
-                displayDrawRect(BOARD_X + x * CELL_SIZE + 1, BOARD_Y + y * CELL_SIZE + 1,
-                                CELL_SIZE - 2, CELL_SIZE - 2, COLOR_WHITE);
-            }
-        }
-    }
-
     // Ghost outline showing where the piece will land
     int ghost = ghostDropY(game);
     for (int y = 0; y < TETROMINO_SIZE; y++) {
@@ -121,6 +111,20 @@ void drawBoard(const Game* game) {
                 displayDrawRect(BOARD_X + (game->currentPiece.x + x) * CELL_SIZE + 1,
                                 BOARD_Y + (ghost + y) * CELL_SIZE + 1,
                                 CELL_SIZE - 2, CELL_SIZE - 2, COLOR_DARK_GRAY);
+            }
+        }
+    }
+
+    // Auto place hint, outlined in the colour of the piece
+    if (game->hintActive) {
+        for (int y = 0; y < TETROMINO_SIZE; y++) {
+            for (int x = 0; x < TETROMINO_SIZE; x++) {
+                if (game->hint.blocks[y][x] && game->hint.y + y >= 0) {
+                    displayDrawRect(BOARD_X + (game->hint.x + x) * CELL_SIZE + 1,
+                                    BOARD_Y + (game->hint.y + y) * CELL_SIZE + 1,
+                                    CELL_SIZE - 2, CELL_SIZE - 2,
+                                    TETROMINO_COLORS[game->hint.shape + 1]);
+                }
             }
         }
     }

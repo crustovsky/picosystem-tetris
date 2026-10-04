@@ -7,9 +7,6 @@
 // Global game instance
 Game game;
 
-// Set by autoPlace() so the piece it locks is recorded in game.autoPlaced
-static bool markPlacement = false;
-
 // Tetromino definitions
 const bool TETROMINOS[SHAPE_COUNT][TETROMINO_SIZE][TETROMINO_SIZE] = {
     // I-shape
@@ -74,9 +71,9 @@ void initGame() {
             game.board[y][x] = 0;
         }
     }
-    memset(game.autoPlaced, 0, sizeof game.autoPlaced);
     
     // Initialise game state
+    game.hintActive = false;
     game.state = GAME_ACTIVE;
     game.score = 0;
     game.level = 1;
@@ -144,6 +141,8 @@ int ghostDropY(const Game* g) {
     return dropY(g, g->currentPiece);
 }
 
+static Tetromino bestPlacement(const Game* g);
+
 // Move the tetromino in the specified direction
 bool moveTetromino(Direction dir) {
     // Ignore movement while paused or after game over
@@ -167,6 +166,13 @@ bool moveTetromino(Direction dir) {
     
     if (!checkCollision(temp)) {
         game.currentPiece = temp;
+        if (dir != DIR_DOWN) {
+            // The player took over, drop the hint
+            game.hintActive = false;
+        } else if (game.hintActive) {
+            // Falling can change which spots are still reachable
+            game.hint = bestPlacement(&game);
+        }
         return true;
     }
     
@@ -211,6 +217,7 @@ bool rotateTetromino() {
     if (!checkCollision(temp)) {
         game.currentPiece = temp;
         game.currentPiece.rotation = (game.currentPiece.rotation + 1) % 4;
+        game.hintActive = false;
         return true;
     }
     
@@ -300,30 +307,26 @@ static float placementScore(const Game* g, Tetromino t) {
          - 7.899265f * holes - 3.385597f * wells;
 }
 
-// Drop the current piece in the best spot it can reach by rotating in place
-// and sliding sideways, as a player would
-void autoPlace() {
-    if (game.state != GAME_ACTIVE) {
-        return;
-    }
-
-    Tetromino rotated = game.currentPiece;
-    Tetromino best = game.currentPiece;
+// Best spot the current piece can reach by rotating in place and sliding
+// sideways, as a player would
+static Tetromino bestPlacement(const Game* g) {
+    Tetromino rotated = g->currentPiece;
+    Tetromino best = g->currentPiece;
     float bestScore = -1e30f;
 
     for (int r = 0; r < 4; r++) {
         for (int x = -TETROMINO_SIZE + 1; x < BOARD_WIDTH; x++) {
             // Slide towards x, giving up if anything is in the way
             Tetromino t = rotated;
-            while (t.x != x && !collides(&game, t)) {
+            while (t.x != x && !collides(g, t)) {
                 t.x += x > t.x ? 1 : -1;
             }
-            if (collides(&game, t)) {
+            if (collides(g, t)) {
                 continue;
             }
 
-            t.y = dropY(&game, t);
-            float score = placementScore(&game, t);
+            t.y = dropY(g, t);
+            float score = placementScore(g, t);
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
@@ -332,21 +335,34 @@ void autoPlace() {
 
         rotateTetrominoMatrix(&rotated);
         rotated.rotation = (rotated.rotation + 1) % 4;
-        if (collides(&game, rotated)) {
+        if (collides(g, rotated)) {
             break;
         }
     }
 
-    game.currentPiece = best;
-    markPlacement = true;
+    return best;
+}
+
+// The first press shows where the current piece would go, the second press
+// drops it there
+void autoPlace() {
+    if (game.state != GAME_ACTIVE) {
+        return;
+    }
+
+    if (!game.hintActive) {
+        game.hint = bestPlacement(&game);
+        game.hintActive = true;
+        return;
+    }
+
+    game.currentPiece = game.hint;
     placeTetromino();
 }
 
 // Place the current tetromino on the board and spawn a new one
 void placeTetromino() {
-    bool mark = markPlacement;
-    markPlacement = false;
-    memset(game.autoPlaced, 0, sizeof game.autoPlaced);
+    game.hintActive = false;
 
     // Place the current tetromino on the board
     for (int y = 0; y < TETROMINO_SIZE; y++) {
@@ -363,7 +379,6 @@ void placeTetromino() {
                 
                 // Mark the cell as filled with the shape type + 1 (0 is empty)
                 game.board[boardY][boardX] = game.currentPiece.shape + 1;
-                game.autoPlaced[boardY][boardX] = mark;
             }
         }
     }
@@ -404,14 +419,12 @@ void clearLines() {
             for (int moveY = y; moveY > 0; moveY--) {
                 for (int x = 0; x < BOARD_WIDTH; x++) {
                     game.board[moveY][x] = game.board[moveY - 1][x];
-                    game.autoPlaced[moveY][x] = game.autoPlaced[moveY - 1][x];
                 }
             }
             
             // Clear the top line
             for (int x = 0; x < BOARD_WIDTH; x++) {
                 game.board[0][x] = 0;
-                game.autoPlaced[0][x] = false;
             }
             
             // Stay on the same line to check if the moved line is also full
